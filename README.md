@@ -52,7 +52,7 @@ python alertmanager_silencer.py
 | Variable | Description | Default Value |
 |----------|-------------|---------------|
 | ALERTMANAGER_URL | Alert Manager base URL | https://pmt.seo.ir/alertmanager |
-| ALERTMANAGER_AUTH | Authentication credentials (username:password) | admin:admin |
+| ALERTMANAGER_AUTH | Authentication credentials (username:password) | admin:admi |
 | LOCAL_TZ | Local timezone for schedule calculations | Asia/Tehran |
 | POLL_INTERVAL | Interval for checking alerts (seconds) | 60 |
 | LOG_DIR | Directory for log files | /var/log/silencer |
@@ -77,6 +77,7 @@ groups:
     annotations:
       summary: High CPU load on {{ $labels.instance }}
       description: CPU load is above 80% for more than 5 minutes
+      # Using multiline format
       silence_schedule: |
         # Silence during maintenance window every day
         01:00;05:00;MON,TUE,WED,THU,FRI,SAT,SUN
@@ -92,9 +93,8 @@ groups:
     annotations:
       summary: Low disk space on {{ $labels.instance }}
       description: Disk usage is above 80% on {{ $labels.mountpoint }}
-      silence_schedule: |
-        # Silence during nightly backup window
-        23:00;03:00;MON,TUE,WED,THU,FRI
+      # Using pipe-separated format
+      silence_schedule: 23:00;03:00;MON,TUE,WED,THU,FRI
 ```
 
 ### Sample Alert in Alert Manager
@@ -120,19 +120,31 @@ groups:
 
 ## Schedule Format
 
-Schedules are defined using alert annotations with the key `silence_schedule`. The format supports multiple lines, where each line follows the pattern:
+Schedules are defined using alert annotations with the key `silence_schedule`. The format supports both multiple lines and pipe-separated (|) schedules, where each schedule follows the pattern:
 
 ```
 HH:MM;HH:MM;DAY,DAY,...
 ```
 
-Example:
+You can use either format:
+
+### Multiline Format
+```yaml
+annotations:
+  silence_schedule: |
+    # Silence during nights on weekdays
+    23:00;07:00;MON,TUE,WED,THU,FRI
+    # Silence during weekends
+    00:00;23:59;SAT,SUN
 ```
-# Silence during nights on weekdays
-23:00;07:00;MON,TUE,WED,THU,FRI
-# Silence during weekends
-00:00;23:59;SAT,SUN
+
+### Pipe-Separated Format
+```yaml
+annotations:
+  silence_schedule: 23:00;07:00;MON,TUE,WED,THU,FRI|00:00;23:59;SAT,SUN
 ```
+
+Both formats are equivalent and you can choose whichever is more convenient for your use case. The multiline format is more readable for multiple schedules, while the pipe-separated format is more compact and useful for single-line configurations.
 
 ## Metrics
 
