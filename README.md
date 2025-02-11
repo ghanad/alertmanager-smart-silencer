@@ -52,7 +52,7 @@ python alertmanager_silencer.py
 | Variable | Description | Default Value |
 |----------|-------------|---------------|
 | ALERTMANAGER_URL | Alert Manager base URL | https://pmt.seo.ir/alertmanager |
-| ALERTMANAGER_AUTH | Authentication credentials (username:password) | admin:SeoPrometheus#@!123 |
+| ALERTMANAGER_AUTH | Authentication credentials (username:password) | admin:admin |
 | LOCAL_TZ | Local timezone for schedule calculations | Asia/Tehran |
 | POLL_INTERVAL | Interval for checking alerts (seconds) | 60 |
 | LOG_DIR | Directory for log files | /var/log/silencer |
