@@ -61,6 +61,63 @@ python alertmanager_silencer.py
 | LOG_BACKUP_COUNT | Number of backup log files to keep | 5 |
 | LOG_LEVEL | Logging level | INFO |
 
+## Examples
+
+### Sample Alert Rule
+```yaml
+groups:
+- name: example
+  rules:
+  - alert: HighCPULoad
+    expr: instance:node_cpu_utilization:avg1m > 0.8
+    for: 5m
+    labels:
+      severity: warning
+      team: infra
+    annotations:
+      summary: High CPU load on {{ $labels.instance }}
+      description: CPU load is above 80% for more than 5 minutes
+      silence_schedule: |
+        # Silence during maintenance window every day
+        01:00;05:00;MON,TUE,WED,THU,FRI,SAT,SUN
+        # Silence during weekends
+        00:00;23:59;SAT,SUN
+
+  - alert: DiskSpaceLow
+    expr: disk_free_percent < 20
+    for: 10m
+    labels:
+      severity: warning
+      team: storage
+    annotations:
+      summary: Low disk space on {{ $labels.instance }}
+      description: Disk usage is above 80% on {{ $labels.mountpoint }}
+      silence_schedule: |
+        # Silence during nightly backup window
+        23:00;03:00;MON,TUE,WED,THU,FRI
+```
+
+### Sample Alert in Alert Manager
+```json
+{
+  "status": "firing",
+  "labels": {
+    "alertname": "HighCPULoad",
+    "instance": "server01.example.com",
+    "severity": "warning",
+    "team": "infra"
+  },
+  "annotations": {
+    "summary": "High CPU load on server01.example.com",
+    "description": "CPU load is above 80% for more than 5 minutes",
+    "silence_schedule": "01:00;05:00;MON,TUE,WED,THU,FRI,SAT,SUN\n00:00;23:59;SAT,SUN"
+  },
+  "startsAt": "2024-02-11T10:00:00Z",
+  "endsAt": "2024-02-11T11:00:00Z",
+  "generatorURL": "http://prometheus.example.com/graph?query=..."
+}
+```
+
 ## Schedule Format
 
 Schedules are defined using alert annotations with the key `silence_schedule`. The format supports multiple lines, where each line follows the pattern:
